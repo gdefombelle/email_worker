@@ -16,8 +16,8 @@ aiosmtplib = "^1.1.7"
 python-multipart = "^0.0.5"
 
 # Dépendances internes pour le développement local (en direct via ../packages)
-# pytune_helpers = { path = "../../packages/pytune_helpers" }
-# pytune_configuration = { path = "../../packages/pytune_configuration" }
+pytune_helpers = { path = "../../packages/pytune_helpers" }
+pytune_configuration = { path = "../../packages/pytune_configuration" }
 
 [tool.poetry.group.docker.dependencies]
 Dépendances internes pour Docker (GitHub avec placeholder token)
