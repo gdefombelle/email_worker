@@ -14,8 +14,8 @@ kombu = "^5.2.0"
 pika = "^1.2.1"
 aiosmtplib = "^1.1.7"
 python-multipart = "^0.0.5"
-pytune_helpers = { path = "../pytune_helpers" }  # Lien vers votre package helper
-pytune_configuration = {path = "../pytune_configuration"}
+pytune_helpers = { path = "../../packages/pytune_helpers" }  # Lien vers votre package helper
+pytune_configuration = {path = "../../packages/pytune_configuration"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.2.2"           # Pour les tests unitaires, optionnel
