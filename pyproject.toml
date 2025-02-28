@@ -20,7 +20,7 @@ pytune_helpers = { path = "../../packages/pytune_helpers" }
 pytune_configuration = { path = "../../packages/pytune_configuration" }
 
 [tool.poetry.group.docker.dependencies]
-Dépendances internes pour Docker (GitHub avec placeholder token)
+# Dépendances internes pour Docker (via GitHub avec placeholder token)
 pytune_helpers = { git = "https://<GITHUB_TOKEN>@github.com/gdefombelle/pytune_helpers.git" }
 pytune_configuration = { git = "https://<GITHUB_TOKEN>@github.com/gdefombelle/pytune_configuration.git" }
 
@@ -35,3 +35,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 email-worker = "worker.email_worker:main"
+
