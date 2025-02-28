@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "email_worker"
+version = "1.1.1"
+description = "Dockerized - for async email sending, using RabbitMQ, Celery, and Redis"
+authors = ["Gabriel de Fombelle <gabriel.de.fombelle@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{ include = "worker" }]  # Assurez-vous que votre code est dans ce répertoire
+
+[tool.poetry.dependencies]
+python = "^3.12"
+celery = "^5.0.5"           # Version possible, ajustez en fonction de vos besoins
+kombu = "^5.2.0"
+pika = "^1.2.1"
+aiosmtplib = "^1.1.7"
+python-multipart = "^0.0.5"
+pytune_helpers = { path = "../pytune_helpers" }  # Lien vers votre package helper
+pytune_configuration = {path = "../pytune_configuration"}
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.2.2"           # Pour les tests unitaires, optionnel
+black = "^23.0.0"           # Pour le formatage du code, optionnel
+isort = "^5.12.0"           # Pour organiser les imports, optionnel
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+email-worker = "worker.email_worker:main"  # Si vous avez une fonction principale à exécuter

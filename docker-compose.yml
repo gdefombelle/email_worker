@@ -1,0 +1,23 @@
+services:
+  email_worker:
+    container_name: pytune-email-worker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - RABBIT_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - REDIS_BACKEND=redis://pytune-redis:6379/0
+      - SMTP_SERVER=${SMTP_SERVER}
+      - SMTP_SERVER_PORT=${SMTP_SERVER_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_DROWSSAP=${SMTP_DROWSSAP}
+      - FROM_EMAIL=${FROM_EMAIL}
+    networks:
+      - back
+      - bridge
+
+networks:
+  back:
+    external: true
+  bridge:
+    driver: bridge
