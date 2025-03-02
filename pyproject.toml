@@ -18,11 +18,8 @@ python-multipart = "^0.0.5"
 # Dépendances internes pour le développement local (en direct via ../packages)
 pytune_helpers = { path = "../../packages/pytune_helpers" }
 pytune_configuration = { path = "../../packages/pytune_configuration" }
+simple_logger = { path = "../../packages/simple_logger"}
 
-[tool.poetry.group.docker.dependencies]
-# Dépendances internes pour Docker (via GitHub avec placeholder token)
-pytune_helpers = { git = "https://<GITHUB_TOKEN>@github.com/gdefombelle/pytune_helpers.git" }
-pytune_configuration = { git = "https://<GITHUB_TOKEN>@github.com/gdefombelle/pytune_configuration.git" }
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.2.2"
