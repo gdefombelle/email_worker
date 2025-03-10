@@ -1,28 +1,23 @@
-# Utiliser Python 3.12 slim pour une image légère
-FROM python:3.12-slim
+# Utilisation d'une image Python 3.12.3 spécifique
+FROM python:3.12.3-slim
 
-# Installer Poetry
-RUN pip install poetry
+# Définition des variables d'environnement pour éviter les tampons stdout
+ENV PYTHONUNBUFFERED 1
 
-# Définir le dossier de travail
+# Installation de Poetry
+RUN pip install --no-cache-dir poetry
+
+# Définition du dossier de travail
 WORKDIR /app
 
-# Copier les fichiers Poetry
+# Copie des fichiers nécessaires
 COPY pyproject.toml poetry.lock ./
 
-# Copier les packages internes
-COPY ../pytune_logger /app/pytune_logger
-COPY ../pytune_configuration /app/pytune_configuration
+# Installation des dépendances avec Poetry
+RUN poetry config virtualenvs.create false && poetry install --no-root --no-interaction --no-ansi
 
-# Configurer Poetry pour utiliser les dépendances locales
-RUN poetry config virtualenvs.create false
-RUN poetry install --no-root --no-dev
-
-# Copier le code source de `email_tasks`
+# Copie du code source
 COPY . .
 
-# Exposer le port (si besoin)
-EXPOSE 5000
-
-# Démarrer Celery
-CMD ["poetry", "run", "celery", "-A", "email_tasks", "worker", "--loglevel=info"]
+# Commande pour démarrer le worker Celery
+CMD ["celery", "-A", "email_tasks", "worker", "--loglevel=info"]

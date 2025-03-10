@@ -7,7 +7,7 @@ from pytune_configuration.sync_config_singleton import config, SimpleConfig
 if config is None:
     config = SimpleConfig()
 
-## lancemeent local celery -A email_tasks worker --loglevel=info
+## lancemeent local: celery -A email_tasks worker --loglevel=info
 
 
 # Configuration de Celery
