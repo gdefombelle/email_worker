@@ -11,7 +11,9 @@ RUN pip install --no-cache-dir poetry
 COPY . /app/
 
 # Étape 5 : Installer les dépendances (sans installer l’app elle-même)
-RUN poetry install --no-root --no-dev
+# Ajout des dépendances nécessaires pour psycopg2
+RUN apt-get update && apt-get install -y libpq-dev gcc
+RUN poetry install --no-root
 
 # Étape 6 : Commande finale pour exécuter Celery
 CMD ["poetry", "run", "celery", "-A", "email_tasks", "worker", "--loglevel=info"]
