@@ -751,7 +751,7 @@ simple_logger = {git = "https://github.com/gdefombelle/simple_logger.git"}
 type = "git"
 url = "https://github.com/gdefombelle/pytune_helpers.git"
 reference = "HEAD"
-resolved_reference = "bca20c0d9c058645d606bc29cee762be99666d31"
+resolved_reference = "85d5bf1bc78f1b68bda675c6d07fe881040016e2"
 
 [[package]]
 name = "redis"
