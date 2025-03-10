@@ -1,23 +1,17 @@
-# Utilisation d'une image Python 3.12.3 spécifique
+# Étape 1 : Utiliser Python 3.12.3 comme base
 FROM python:3.12.3-slim
 
-# Définition des variables d'environnement pour éviter les tampons stdout
-ENV PYTHONUNBUFFERED 1
-
-# Installation de Poetry
-RUN pip install --no-cache-dir poetry
-
-# Définition du dossier de travail
+# Étape 2 : Définir le dossier de travail
 WORKDIR /app
 
-# Copie des fichiers nécessaires
-COPY pyproject.toml poetry.lock ./
+# Étape 3 : Installer Poetry proprement
+RUN pip install --no-cache-dir poetry
 
-# Installation des dépendances avec Poetry
-RUN poetry config virtualenvs.create false && poetry install --no-root --no-interaction --no-ansi
+# Étape 4 : Copier tout le projet dans /app
+COPY . /app/
 
-# Copie du code source
-COPY . .
+# Étape 5 : Installer les dépendances (sans installer l’app elle-même)
+RUN poetry install --no-root --no-dev
 
-# Commande pour démarrer le worker Celery
-CMD ["celery", "-A", "email_tasks", "worker", "--loglevel=info"]
+# Étape 6 : Commande finale pour exécuter Celery
+CMD ["poetry", "run", "celery", "-A", "email_tasks", "worker", "--loglevel=info"]

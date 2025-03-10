@@ -7,14 +7,14 @@ from pytune_configuration.sync_config_singleton import config, SimpleConfig
 if config is None:
     config = SimpleConfig()
 
-## lancemeent local: celery -A email_tasks worker --loglevel=info
+## lancement local: celery -A email_tasks worker --loglevel=info
 
 
 # Configuration de Celery
 celery_app = Celery(
     "email_tasks",
-    broker = config.RABBIT_BROKER_URL,
-    backend = config.RABBIT_BACKEND,
+        broker=getenv("RABBIT_BROKER_URL", "pyamqp://admin:MyStr0ngP@ss2024!@localhost//"),
+        backend=getenv("RABBIT_BACKEND","redis://localhost:6379/0"),
 )
 
 # Configuration additionnelle

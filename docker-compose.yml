@@ -1,29 +1,11 @@
-version: "3.8"
-
 services:
-  rabbitmq:
-    image: "rabbitmq:3-management"
-    container_name: "rabbitmq"
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: "admin"
-      RABBITMQ_DEFAULT_PASS: "password"
-
-  redis:
-    image: "redis:7"
-    container_name: "redis"
-    ports:
-      - "6379:6379"
-
   email_worker:
     build: .
-    container_name: "email_worker"
-    depends_on:
-      - rabbitmq
-      - redis
-    environment:
-      - BROKER_URL=pyamqp://admin:password@rabbitmq//
-      - BACKEND_URL=redis://redis:6379/0
+    container_name: email_worker
     restart: always
+    networks:
+      - pytune_network
+
+networks:
+  pytune_network:
+    external: true
