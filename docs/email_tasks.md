@@ -90,6 +90,10 @@ celery_client.send_mail.delay(
 )
 ```
 
+# 4 LANCEMENT
+poetry run celery -A email_tasks worker --loglevel=info
+
+
 ## Conclusion
 Le module `email_tasks` fournit un moyen simple et efficace d'envoyer des emails de manière asynchrone en utilisant Celery, RabbitMQ et Redis. Il inclut une vérification de l'état du système pour assurer un bon fonctionnement.
 
