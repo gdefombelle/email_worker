@@ -14,7 +14,7 @@ if config is None:
 celery_app = Celery(
     "email_tasks",
         broker=getenv("RABBIT_BROKER_URL", "pyamqp://admin:MyStr0ngP@ss2024!@localhost//"),
-        backend=getenv("RABBIT_BACKEND","redis://localhost:6379/0"),
+        backend=getenv("RABBIT_BACKEND","redis://:UltraSecurePass2024!@pytune-redis:6379/0"),
 )
 
 # Configuration additionnelle
