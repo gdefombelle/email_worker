@@ -1,52 +1,31 @@
 [project]
 name = "email_worker"
-version = "0.0.0"
-description = "PyTune worker for email delivery"
+version = "0.1.0"
+description = "PyTune email worker"
 requires-python = ">=3.12"
 
-[tool.poetry]
-name = "email_worker"                       # distribution en kebab-case
-version = "1.1.2"
-description = "Async email sender using Celery + RabbitMQ (optionally Redis)"
-authors = ["Gabriel de Fombelle <gabriel.de.fombelle@gmail.com>"]
-license = "MIT"
-readme = "README.md"
-packages = [{ include = "worker" }]         # garde tel quel si ton code est dans ./worker/
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]>=0.34",
+    "python-dotenv",
+    "pydantic",
+    "requests",
+    "python-multipart",
+    "toml",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.12,<4.0"
-
-# Celery stack
-celery = "^5.4.0"                           # (5.5 OK aussi, mais 5.4 est très stable)
-# kombu et billiard sont tirés par Celery → pas besoin de les déclarer
-# Si tu utilises Redis comme backend/result:
-redis = "^5.0.7"
-
-# Broker RabbitMQ (AMQP) : Celery passe par kombu/amqp. Garde pika uniquement si tu publies toi-même des messages hors Celery.
-# pika = "^1.3.2"
-
-# Email
-aiosmtplib = "^1.1.7"
-
-# Fichiers multi-part pas nécessaires pour un worker → retiré
-# python-multipart = "^0.0.12"
-
-# Dépendances internes (DEV, editable)
-pytune_configuration = { git = "https://github.com/gdefombelle/pytune_configuration.git", branch = "main"}
-simple_logger = { git = "https://github.com/gdefombelle/simple_logger.git", branch = "main"}
-pytune_helpers_messaging = { git = "https://github.com/gdefombelle/pytune_helpers_messaging.git", branch = "main" }
-
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.2.0"
-ruff = "^0.6.8"
-mypy = "^1.11.1"
-black = "^24.8.0"
-isort = "^5.13.2"
+# Dépendances internes via workspace
+pytune_auth_common = { workspace = true }
+pytune_configuration = { workspace = true }
+simple_logger = { workspace = true }
+pytune_data = { workspace = true }
+pytune_helpers_messaging = { workspace = true }
 
 [build-system]
-requires = ["poetry-core>=1.9.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry.scripts]
-email-worker = "worker.email_worker:main"   # exécutable: `poetry run email-worker`
+# Désactive complètement le packaging (service != package)
+[tool.hatch.build.targets.wheel]
+packages = []
+exclude = ["**"]
