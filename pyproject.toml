@@ -1,31 +1,47 @@
 [project]
 name = "email_worker"
-version = "0.1.0"
-description = "PyTune email worker"
+version = "1.0.0"
+description = "PyTune Celery email worker"
 requires-python = ">=3.12"
 
 dependencies = [
-    "fastapi",
-    "uvicorn[standard]>=0.34",
-    "python-dotenv",
-    "pydantic",
-    "requests",
-    "python-multipart",
-    "toml",
+    # Email / SMTP
+    "aiosmtplib>=1.1.7",
+
+    # Celery + AMQP + Redis backend
+    "celery>=5.4.0",
+    "kombu>=5.4.0",
+    "redis>=5.0.7",
+
+    # Templates
+    "jinja2>=3.1.4",
+
+    # Utilitaires
+    "python-dotenv>=1.0.1",
+    "pydantic>=2.8.0",
+    "requests>=2.32.0",
+
+    # PyTune internal packages
+    "simple_logger",
+    "pytune_configuration",
+    "pytune_auth_common",
+    "pytune_data",
+    "pytune_helpers_messaging",
+    "pytune_chat",
+    "pytune_helpers_images",
+    "pytune_llm",
+
 ]
 
-# Dépendances internes via workspace
-pytune_auth_common = { workspace = true }
-pytune_configuration = { workspace = true }
-simple_logger = { workspace = true }
-pytune_data = { workspace = true }
-pytune_helpers_messaging = { workspace = true }
+# [tool.uv]
+# package = false
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-# Désactive complètement le packaging (service != package)
-[tool.hatch.build.targets.wheel]
-packages = []
-exclude = ["**"]
+# [tool.uv.sources]
+# simple_logger             = { path = "packages/simple_logger" }
+# pytune_configuration      = { path = "packages/pytune_configuration" }
+# pytune_auth_common        = { path = "packages/pytune_auth_common" }
+# pytune_data               = { path = "packages/pytune_data" }
+# pytune_helpers_messaging  = { path = "packages/pytune_helpers_messaging" }
+# pytune_chat  = { path = "packages/pytune_chat" }
+# pytune-helpers-images =  { path = "packages/pytune_helpers_images" }
+# pytune_llm =  { path = "packages/pytune_llm" }

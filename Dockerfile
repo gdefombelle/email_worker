@@ -1,20 +1,41 @@
-FROM python:3.12.3-slim
+# ===============================
+# Étape 1 : Build avec UV
+# ===============================
+FROM python:3.12-slim AS builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN pip install uv
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y libpq-dev gcc && \
-    pip install --no-cache-dir poetry && \
-    rm -rf /var/lib/apt/lists/*
+# Copier le pyproject du worker
+COPY src/workers/email_worker/pyproject.toml ./pyproject.toml
 
-# Copie d'abord les manifests pour le cache
-COPY pyproject.toml poetry.lock README.md ./
-RUN poetry install --without dev --no-root
+# Copier les packages internes
+COPY src/packages ./packages
 
-# Puis le reste du code
-COPY . .
+# Copier le code du worker
+COPY src/workers/email_worker ./
 
-# IMPORTANT : vise bien le module/variable Celery de ta nouvelle arbo
-# Si ta variable s'appelle "celery_app" :
+# Installer (sans dev)
+RUN uv sync --no-dev
 
-CMD ["poetry", "run", "celery", "-A", "worker.email_worker:app", "worker", "--loglevel=info"]
 
+
+# ===============================
+# Étape 2 : Image finale
+# ===============================
+FROM python:3.12-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY --from=builder /app /app
+
+CMD ["/app/.venv/bin/celery", "-A", "email_tasks", "worker", "--loglevel=info"]
