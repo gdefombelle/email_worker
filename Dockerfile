@@ -1,7 +1,7 @@
 # ===============================
 # Étape 1 : Build avec UV
 # ===============================
-FROM python:3.12-slim AS builder
+FROM --platform=linux/amd64 python:3.12-slim AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
@@ -12,18 +12,17 @@ RUN pip install uv
 
 WORKDIR /app
 
-# Copier le pyproject du worker
-COPY src/workers/email_worker/pyproject.toml ./pyproject.toml
+# 👉 Copie du workspace ROOT (OBLIGATOIRE)
+COPY pyproject.toml uv.lock ./
 
-# Copier les packages internes
-COPY src/packages ./packages
+# 👉 Copie de TOUT le repo (packages + workers)
+COPY src ./src
 
-# Copier le code du worker
-COPY src/workers/email_worker ./
+# 👉 Se placer dans le worker
+WORKDIR /app/src/workers/email_worker
 
-# Installer (sans dev)
+# 👉 Installer les deps VIA le workspace
 RUN uv sync --no-dev
-
 
 
 # ===============================
@@ -36,6 +35,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+
 COPY --from=builder /app /app
 
-CMD ["/app/.venv/bin/celery", "-A", "email_tasks", "worker", "--loglevel=info"]
+# 👉 Exécution DANS le worker
+WORKDIR /app/src/workers/email_worker
+
+# CMD ["/app/.venv/bin/celery","-A","worker","worker","-Q","email_tasks_queue,email_health_tasks_queue","--loglevel=info","-P","solo"]
+CMD ["/app/.venv/bin/celery","-A","worker.email_tasks","worker","-Q","email_tasks_queue,email_health_tasks_queue","--loglevel=info","-P","solo"]

@@ -1,3 +1,4 @@
+from email.utils import formataddr
 from celery import Celery
 import aiosmtplib
 from email.mime.text import MIMEText
@@ -11,11 +12,13 @@ if config is None:
 
 
 # Configuration de Celery
-app = Celery(
-    "email_tasks",
-        broker=getenv("RABBIT_BROKER_URL", "pyamqp://admin:MyStr0ngP@ss2024!@localhost//"),
-        backend=getenv("RABBIT_BACKEND","redis://:UltraSecurePass2024!@pytune-redis:6379/0"),
+BROKER_URL = getenv("RABBIT_BROKER_URL", "pyamqp://admin:MyStr0ngP@ss2024!@localhost//")
+BACKEND_URL = getenv(
+    "RABBIT_BACKEND",
+    getenv("CELERY_RESULT_BACKEND", "redis://:UltraSecurePass2024!@pytune-redis:6379/0"),
 )
+
+app = Celery("email_tasks", broker=BROKER_URL, backend=BACKEND_URL)
 
 # Configuration additionnelle
 app.conf.update(
@@ -28,8 +31,8 @@ app.conf.update(
     enable_utc=True,  # Activer UTC
 )
 
-@app.task(queue="email_tasks_queue")
-def send_mail(to_email, subject, body, is_html=True, from_email=config.FROM_EMAIL):
+@app.task(queue="email_tasks_queue",name="email_tasks.send_mail")
+def send_mail(to_email, subject, body, is_html=True, from_email=config.FROM_EMAIL, reply_to=None,):
     import asyncio  # Nécessaire pour exécuter une coroutine dans une fonction non-async
 
     async def async_send():
@@ -37,7 +40,11 @@ def send_mail(to_email, subject, body, is_html=True, from_email=config.FROM_EMAI
             # Préparer le message email
             msg = MIMEText(body, "html" if is_html else "plain")
             msg["Subject"] = subject
-            msg["From"] = from_email if from_email else  config.FROM_EMAIL
+            effective_from = from_email or config.FROM_EMAIL
+            msg["From"] = formataddr(("PyTune Support", effective_from))
+            if reply_to:
+                msg["Reply-To"] = reply_to
+            
             msg["To"] = to_email
 
             # Configuration SMTP
@@ -63,7 +70,7 @@ def send_mail(to_email, subject, body, is_html=True, from_email=config.FROM_EMAI
     return asyncio.run(async_send())
 
 
-@app.task(queue="email_health_tasks_queue")
+@app.task(queue="email_health_tasks_queue",name="email_tasks.health_check")
 def health_check():
     """
     Performs a health check for the Celery system:

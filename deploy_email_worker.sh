@@ -1,48 +1,65 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -e
 
-echo "🚀 PyTune – Deploy EMAIL WORKER"
-echo "--------------------------------"
+SERVICE_NAME="email_worker"
+SERVER="gabriel@195.201.9.184"
 
-# Dossier du worker (là où se trouve ce script)
-WORKER_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Position du script → dossier email_worker
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Racine du projet = remonter 3 niveaux : workers → src → PYTUNE-PLATFORM
-PROJECT_ROOT="$(realpath "$WORKER_DIR/../../..")"
+# Racine du monorepo = 3 niveaux au-dessus
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../../" && pwd)"
 
-echo "📍 Racine déterminée : $PROJECT_ROOT"
+REMOTE_DIR="/home/gabriel/deploy/$SERVICE_NAME"
+LOGS_DIR="/home/gabriel/pytune_logs/$SERVICE_NAME"
 
-if [ ! -d "$PROJECT_ROOT/src" ]; then
-    echo "❌ Erreur : le dossier src/ est introuvable dans $PROJECT_ROOT"
-    exit 1
-fi
+echo "📁 Repo root: $REPO_ROOT"
+cd "$REPO_ROOT"
 
-echo "📦 Construction Docker : pytune_email_worker"
+echo "🚀 Deploying $SERVICE_NAME to server…"
 
+echo "📦 Building Docker image (AMD64)..."
 docker build \
-  -f "$WORKER_DIR/Dockerfile" \
-  -t pytune_email_worker \
-  "$PROJECT_ROOT"
+    --platform linux/amd64 \
+    -t $SERVICE_NAME:latest \
+    -f src/workers/$SERVICE_NAME/Dockerfile \
+    .
 
-# Vérifier si le réseau existe sinon le créer
-if ! docker network inspect pytune_network >/dev/null 2>&1; then
-    echo "🌐 Réseau 'pytune_network' absent → création..."
-    docker network create pytune_network
-else
-    echo "🌐 Réseau 'pytune_network' déjà présent"
-fi
+echo "📦 Saving image to tarball..."
+docker save $SERVICE_NAME:latest | gzip > $SERVICE_NAME.tar.gz
 
-echo "⛴  Arrêt ancien container (s'il existe)"
-docker stop email_worker 2>/dev/null || true
-docker rm   email_worker 2>/dev/null || true
+echo "📤 Uploading to server..."
+ssh $SERVER "mkdir -p $REMOTE_DIR"
+scp $SERVICE_NAME.tar.gz $SERVER:$REMOTE_DIR/
 
-echo "🟢 Démarrage container pytune_email_worker"
+echo "🔧 Deploying on server..."
+ssh $SERVER << EOF
+set -e
 
+cd $REMOTE_DIR
+
+echo "📦 Loading Docker image…"
+gunzip -f $SERVICE_NAME.tar.gz
+docker load < $SERVICE_NAME.tar
+
+echo "🛑 Stopping old container…"
+docker stop $SERVICE_NAME || true
+docker rm $SERVICE_NAME || true
+
+echo "📁 Ensuring logs directory…"
+mkdir -p $LOGS_DIR
+
+echo "🚀 Starting new worker container…"
 docker run -d \
-  --name email_worker \
-  --restart unless-stopped \
-  --network pytune_network \
-  -v /var/log/pytune:/var/log/pytune \
-  pytune_email_worker
+    --name $SERVICE_NAME \
+    --restart always \
+    --network pytune_network \
+    -v $LOGS_DIR:/var/log/pytune \
+    -e LOG_DIR="/var/log/pytune" \
+    --env-file /home/gabriel/pytune.env \
+    $SERVICE_NAME:latest
 
-echo "🎉 Déploiement email_worker terminé"
+rm -f $SERVICE_NAME.tar
+EOF
+
+echo "🎉 $SERVICE_NAME deployed successfully!"
